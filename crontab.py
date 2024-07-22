@@ -24,6 +24,7 @@ WEEKDAYS = {
     "4": "Thursday",
     "5": "Friday",
     "6": "Saturday",
+    "7": "Sunday",
     "sun": "Sunday",
     "mon": "Monday",
     "tue": "Tuesday",
@@ -57,12 +58,19 @@ class CrontabDescription:
         if len(r) > 1:
             assert len(r) == 2
             self.every = True
-            return f"every {r[1]} minutes" + self.minutes_desc(r[0], hour)
+            return f"every {r[1]} minutes " + self.minutes_desc(r[0], hour)
+
+        r = v.split("-")
+        if len(r) > 1:
+            assert len(r) == 2
+            self.every = True
+            return f"between minutes {r[0]} to {r[1]}"
 
         if v == "*":
             ret = "every minute" if not self.every else ""
             self.every = True
             return ret
+
         ret = " and ".join([fmt(x) for x in v.split(",")])
         if hour is None:
             ret += " minutes past"
@@ -167,7 +175,7 @@ class CrontabDescription:
         desc = re.sub(r"every day on", r"on", desc)
         desc = re.sub(r"in every month", r"every month", desc)
 
-        if not desc.startswith("every"):
+        if not desc.startswith("every") and not desc.startswith("between"):
             desc = "at " + desc
 
         desc = desc[0].upper() + desc[1:]
